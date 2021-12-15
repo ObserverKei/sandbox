@@ -22,7 +22,7 @@ fn_cat_update()
 
 fn_cat_see()
 {
-	ls > `h_cat_self see`
+	ls > `h_cat_self cat_see_log`
 }
 
 h_cat_self()
