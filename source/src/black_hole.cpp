@@ -16,7 +16,6 @@ BlackHole::BlackHole(local_t local) : Object(local)
 
 bool BlackHole::interest(const Object &obj)
 {
-    std::cout << "m_quality:"<< obj.m_quality << std::endl;
     if (!obj.m_quality)
         return false;
 
@@ -32,7 +31,7 @@ int BlackHole::action(Object &obj)
     this->m_show = (this->m_quality > 9) ? VIEW_BLACK_HOLE : 
         (this->m_quality + VIEW_ZERO);
     if (obj.m_type == this->m_type) {
-        std::cout << "good" << std::endl;
+        //std::cout << "good" << std::endl;
     }
 
     return 0;

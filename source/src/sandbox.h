@@ -1,6 +1,7 @@
 #ifndef __SANDBOX_H__
 #define __SANDBOX_H__
 
+#include <assert.h>
 #include "stdint.h"
 
 #include "space.h"

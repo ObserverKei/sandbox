@@ -41,12 +41,10 @@ static void *view(void *arg)
 int sandbox_init(void)
 {
     Space *space = get_space();
-#if 0
     space->set_object(new BlackHole(local_t(5, 5)));
     space->set_object(new BlackHole(local_t(5, 15)));
     space->set_object(new BlackHole(local_t(10, 25)));
     space->set_object(new BlackHole(local_t(15, 35)));
-#endif
 
     pthread_create(&s_tid[PTHREAD_VIEW], NULL, view, &s_sandbox);
 
@@ -64,11 +62,9 @@ int sandbox_exec(void)
     local_t local;
     while (still_running()) {
         for (auto iter = s_space.begin(); iter != s_space.end(); ++iter) {
-            //std::cout << "++" << std::endl;
             Object &obj = *iter;
             if (!obj.m_quality)
                 continue;
-            //std::cout << "**" << std::endl;
                     
 
             for (auto other = s_space.begin(); other != s_space.end(); ++other) {
@@ -76,15 +72,11 @@ int sandbox_exec(void)
                 
                 if (!other_obj.m_quality)
                     continue;
-                //std::cout << "***1" << std::endl;
                 if (other_obj == obj)
                     continue;
-                std::cerr << "***2" << std::endl;
 
                 if (obj.interest(other_obj)) {
-                    std::cout << "---0" << std::endl;
                     obj.action(other_obj);
-                    std::cout << "---1" << std::endl;
                 }
             }
         }

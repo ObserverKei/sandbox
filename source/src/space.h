@@ -37,15 +37,15 @@ struct Space {
     public:
         struct iterator {
             public:
-                iterator(Object &obj_base, size_t idx, size_t size);
+                iterator(space_t &space, local_t idx, local_t size);
                 iterator operator++();
                 bool operator!=(const iterator &where) const;
                 Object &operator*();
 
             public:
-                Object *m_base;
-                size_t m_size;
-                size_t m_idx;
+                space_t *m_base;
+                local_t m_idx;
+                local_t m_size;
         };
 
     public:
@@ -56,6 +56,7 @@ struct Space {
         void draw_view();
         iterator begin();
         iterator end();
+    private:
 
     public:
         space_t m_space;

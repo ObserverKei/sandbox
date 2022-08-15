@@ -15,6 +15,9 @@ typedef struct local_st {
         local_st(const size_t x, const size_t y);
         bool operator==(const local_st &where) const;
         bool operator!=(const local_st &where) const;
+        bool operator<(const local_st &where) const;
+        static size_t cul_y(size_t idx);
+        static size_t cul_x(size_t idx);
 
     public:
         size_t m_x;

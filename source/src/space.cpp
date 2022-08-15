@@ -1,5 +1,6 @@
 #include "space.h"
 
+#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -39,24 +40,39 @@ Space::Space() : m_space()
         (*view)[y][SPACE_VIEW_X] = '\n';
     }
 
-    for (size_t y = 0; y < SPACE_MAP_Y; ++y) {
+    for (size_t count = 0, y = 0; y < SPACE_MAP_Y; ++y) {
         for (size_t x = 0; x < SPACE_MAP_X; ++x) {
             m_space[y][x] = new Object(local_t(x, y));
-            std::cerr << "y:" <<  m_space[y][x]->m_local.m_y << ",x:" <<  m_space[y][x]->m_local.m_x <<
-                ",m_qu:" <<  m_space[y][x]->m_quality << std::endl;;
+            ++count;
         }
     }
 }
 
-Space::iterator::iterator(Object &obj_base, size_t idx, size_t size) : m_idx(idx), m_size(size)
+Space::iterator::iterator(space_t &space, local_t idx, local_t size) : 
+    m_base(&space), m_idx(idx), m_size(size)
 {
-    m_base = &obj_base;
+    assert(m_size.m_y <= SPACE_MAP_Y);
+    assert(m_size.m_x <= SPACE_MAP_X);
 }
 
 Space::iterator Space::iterator::operator++()
 {
-    if (m_idx < m_size)
-        ++m_idx;
+    if (m_size.m_y-2 == m_idx.m_y &&
+            m_idx.m_x == m_size.m_x-2) {
+        m_idx.m_x = m_size.m_x;
+        m_idx.m_y = m_size.m_y;
+        return *this;
+    }
+    if (m_idx.m_y >= m_size.m_y-1)
+        return *this;
+    if (m_idx.m_x >= m_size.m_x-1) {
+        m_idx.m_x = 0;
+        ++m_idx.m_y;
+        return *this;
+    }
+    ++m_idx.m_x;
+    assert(m_idx.m_x < m_size.m_x);
+
     return *this;
 }
 
@@ -73,21 +89,18 @@ bool Space::iterator::operator!=(const iterator &where) const
 
 Object &Space::iterator::operator*()
 {
-    if (m_idx < m_size)
-        return m_base[m_idx];
-    else
-        return m_base[m_size - 1];
+    return *(*m_base)[m_idx.m_y][m_idx.m_x];
 }
 
 Space::iterator Space::begin()
 {
-    return iterator(*m_space[0][0], 0, sizeof(space_t) / sizeof(Object));
+    return iterator(m_space, local_st(0, 0), local_st(SPACE_MAP_X, SPACE_MAP_Y));
 }
 
 Space::iterator Space::end()
 {
-    return iterator(*m_space[0][0], sizeof(space_t) / sizeof(Object),
-            sizeof(space_t) / sizeof(Object));
+    return iterator(m_space, local_st(SPACE_MAP_X, SPACE_MAP_Y), 
+            local_st(SPACE_MAP_X, SPACE_MAP_Y));
 }
 
 int Space::set_object(Object *object)
