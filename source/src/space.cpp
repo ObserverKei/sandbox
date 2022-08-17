@@ -4,8 +4,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdio.h>
 #include <string>
 #include <iostream>
+
+size_t Space::m_fps = 0;
+size_t Space::m_draw_view_cnt = 0;
 
 Space::~Space()
 {
@@ -125,6 +129,18 @@ int Space::get_object(const local_t &local, Object **object)
     return 0;
 }
 
+static std::string add_view_line(const char *name, size_t val)
+{
+    assert(name);
+    std::string view_info = std::string("[") + name + std::string(":%") + 
+        std::to_string((SPACE_MAP_X) > strlen(name) ? 
+                (SPACE_MAP_X - strlen(name) - 1) : 1) + "zu]\n";
+    char buf[4096] = {0};
+
+    snprintf(buf, sizeof(buf), view_info.c_str(), val);
+    return std::string(buf);
+}
+
 void Space::draw_view(void)
 {
 #if 0
@@ -138,17 +154,35 @@ void Space::draw_view(void)
         for (size_t x = 0; x < SPACE_MAP_X; ++x)
             m_view[y+SPACE_VIEW_EDGE][x+SPACE_VIEW_EDGE] = m_space[y][x]->m_show;
 
+    size_t m_score = 0;
 #define VIEW_INFO "[score:%34zu]\n"
-    std::string view_info = std::string("[score:%") + 
-        std::to_string((SPACE_MAP_X) > strlen("score:") ? 
-                (SPACE_MAP_X - strlen("score:")) : 1) + "zu]\n";
+    std::string score_view = add_view_line("score", m_score);
+    std::string fps_view = add_view_line("fps", m_fps);
+
+    std::string view_info = score_view + fps_view;
+
+
+    size_t endl_cnt = 0;
+    const char *ch = view_info.c_str();
+    for (size_t i = 0; i < view_info.length(); ++i) {
+        if (ch[i] == '\n')
+            ++endl_cnt;
+    }
+    
     std::string view_format = std::string("%s") + view_info + 
-        std::string("\033[") + std::to_string(SPACE_MAP_Y + 3) + "A";
+        std::string("\033[") + std::to_string(SPACE_MAP_Y + endl_cnt + 2) + "A";
+
     std::string view_str((const char *)m_view, sizeof(m_view));
 
-    size_t m_score = 0;
 
-    SPACE_VIEW(view_format.c_str(), view_str.c_str(), m_score);
+    SPACE_VIEW(view_format.c_str(), view_str.c_str());
     usleep(SPACE_VIEW_LOOP_TIME_MS * 1000);
+    ++m_draw_view_cnt;
+}
+
+void Space::fflash_fps()
+{
+    m_fps = m_draw_view_cnt;
+    m_draw_view_cnt = 0;
 }
 

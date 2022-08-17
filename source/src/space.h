@@ -4,13 +4,13 @@
 #include <stdio.h>
 #include "object.h"
 
-#define SPACE_MAP_Y (35)
+#define SPACE_MAP_Y (10)
 #define SPACE_MAP_X (2*(SPACE_MAP_Y))
 #define SPACE_VIEW_EDGE (1)
 #define SPACE_VIEW_INFO (1)
 #define SPACE_VIEW_Y ((SPACE_MAP_Y)+2*(SPACE_VIEW_EDGE))
 #define SPACE_VIEW_X ((SPACE_MAP_X)+2*(SPACE_VIEW_EDGE))
-#define SPACE_VIEW_LOOP_TIME_MS 100
+#define SPACE_VIEW_LOOP_TIME_MS 10
 #define SPACE_VIEW(fmt, ...) do { \
     fprintf(stdout, fmt, ##__VA_ARGS__); \
 } while (0)
@@ -56,11 +56,13 @@ struct Space {
         void draw_view();
         iterator begin();
         iterator end();
-    private:
+        static void fflash_fps();
 
     public:
         space_t m_space;
         view_t m_view;
+        static size_t m_fps;
+        static size_t m_draw_view_cnt;
 };
 
 #endif//__SPACE_H__
