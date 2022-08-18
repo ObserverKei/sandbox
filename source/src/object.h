@@ -3,10 +3,8 @@
 
 #include "physics.h"
 
-
 struct Object : public Physics {
     public:
-        Object();
         Object(local_t local);
         virtual bool interest(const Object &obj);
         virtual int action(Object &obj);

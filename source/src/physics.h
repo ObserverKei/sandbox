@@ -33,6 +33,7 @@ struct Physics {
         bool operator==(const Physics &where) const;
 
     public:
+        uint64_t m_magic;
         uint64_t m_quality;
         local_st m_local;
         char m_show;

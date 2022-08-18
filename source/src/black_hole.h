@@ -5,14 +5,15 @@
 
 class BlackHole : public Object {
     public:
-        BlackHole();
-        BlackHole(local_t local);
+        BlackHole(Space *space, local_t local);
         bool interest(const Object &obj);
         int action(Object &obj);
+        void destroy();
         using Object::operator==;
         
     private:
         size_t m_action_radius;
+        Space *m_space;
 };
 
 #endif//__BLACK_HOLE_H__

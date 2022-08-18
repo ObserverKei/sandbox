@@ -1,9 +1,5 @@
 #include "object.h"
 
-Object::Object()
-{
-}
-
 Object::Object(local_t local) : Physics(local)
 {
 }

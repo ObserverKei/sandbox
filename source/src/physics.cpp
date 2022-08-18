@@ -62,7 +62,8 @@ Physics::Physics(const Physics &where)
 
 Physics::Physics(local_t local) : m_local(local), m_quality(0), m_type(OBJECT_DEFAULT), m_show(VIEW_EMPTY)
 {
-
+    static uint32_t rand = 0;
+    m_magic = ++rand;
 }
 
 #include <iostream>
@@ -70,7 +71,7 @@ Physics::Physics(local_t local) : m_local(local), m_quality(0), m_type(OBJECT_DE
 bool Physics::operator==(const Physics &where) const 
 {
 
-    assert(m_quality < 100);
+    //assert(m_quality < 1000);
     if (m_type != where.m_type)
         return false;
     if (m_quality != where.m_quality)
@@ -78,6 +79,8 @@ bool Physics::operator==(const Physics &where) const
     if (m_show != where.m_show)
         return false;
     if (m_local != where.m_local)
+        return false;
+    if (m_magic != where.m_magic)
         return false;
     return true;
 }

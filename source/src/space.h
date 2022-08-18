@@ -3,8 +3,9 @@
 
 #include <stdio.h>
 #include "object.h"
+#include <queue>
 
-#define SPACE_MAP_Y (10)
+#define SPACE_MAP_Y (35)
 #define SPACE_MAP_X (2*(SPACE_MAP_Y))
 #define SPACE_VIEW_EDGE (1)
 #define SPACE_VIEW_INFO (1)
@@ -13,6 +14,7 @@
 #define SPACE_VIEW_LOOP_TIME_MS 10
 #define SPACE_VIEW(fmt, ...) do { \
     fprintf(stdout, fmt, ##__VA_ARGS__); \
+    fflush(stdout); \
 } while (0)
 #define STR(x) #x
 #define TO_STR(x) STR(x)
@@ -42,7 +44,7 @@ struct Space {
                 bool operator!=(const iterator &where) const;
                 Object &operator*();
 
-            public:
+            private:
                 space_t *m_base;
                 local_t m_idx;
                 local_t m_size;
@@ -53,16 +55,21 @@ struct Space {
         ~Space();
         int set_object(Object *object);
         int get_object(const local_t &local, Object **object);
+        int del_object(const local_t &local);
+        int mov_object(Object *object, const local_t &old_local);
         void draw_view();
         iterator begin();
         iterator end();
         static void fflash_fps();
+        static void clear_trash();
 
     public:
         space_t m_space;
         view_t m_view;
+        size_t m_score;
         static size_t m_fps;
         static size_t m_draw_view_cnt;
+        static std::queue<Object *> m_trash;
 };
 
 #endif//__SPACE_H__
