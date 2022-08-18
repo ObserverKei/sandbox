@@ -88,9 +88,9 @@ int sandbox_init(void)
 
     pthread_create(&s_tid[PTHREAD_VIEW], NULL, view, &s_sandbox);
     add_unit_timer(s_space.fflash_fps);
-    add_unit_timer(rand_black_hole);
-    add_unit_timer(rand_black_hole);
-    add_unit_timer(rand_black_hole);
+    for (size_t i = 0; i < 9; ++i) {
+        add_unit_timer(rand_black_hole);
+    }
 
     return 0;
 }
@@ -182,7 +182,7 @@ int sandbox_exec(void)
                 if (obj.interest(other_obj)) {
                     obj.action(other_obj);
                 }
-                usleep(1000*10);
+                usleep(1000);
             }
         }
 

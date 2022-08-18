@@ -233,7 +233,7 @@ void Space::draw_view(void)
 
 
     SPACE_VIEW(view_format.c_str(), view_str.c_str());
-    usleep(SPACE_VIEW_LOOP_TIME_MS * 3000);
+    usleep(SPACE_VIEW_LOOP_TIME_MS * 1000);
     ++m_draw_view_cnt;
 }
 
