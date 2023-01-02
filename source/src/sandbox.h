@@ -12,13 +12,17 @@ extern "C" {
 #endif//__cplusplus
 
 extern FILE *g_log_fp;
+extern char g_debug_enable;
 #define dmsg(fmt, ...) do { \
-    fprintf(g_log_fp, "%s %s (%d) " fmt "\n", __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__); \
-    fflush(g_log_fp); \
+    if (g_debug_enable) { \
+        fprintf(g_log_fp, "%s %s (%d) " fmt "\n", __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__); \
+        fflush(g_log_fp); \
+    } \
 } while (0)
 
 
 bool still_running(void);
+Space *get_space(void);
 
 #ifdef __cplusplus
 }//extern "C"

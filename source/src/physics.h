@@ -24,18 +24,18 @@ typedef struct local_st {
         size_t m_y;
 } local_t;
 
-
 struct Physics {
     public:
         Physics();
         Physics(local_t local);
         Physics(const Physics &where);
         bool operator==(const Physics &where) const;
+		bool operator!=(const Physics &where) const;
 
     public:
         uint64_t m_magic;
         uint64_t m_quality;
-        local_st m_local;
+        local_t m_local;
         char m_show;
         object_t m_type;
 };

@@ -18,17 +18,23 @@ enum {
 
 static pthread_t s_tid[PTHREAD_MAX] = {0};
 FILE *g_log_fp = NULL;
+char g_debug_enable = 0;
 
 static bool s_running_enable = true;
 static sandbox_t s_sandbox = {0};
 static Space s_space; 
+
+void set_running(bool enable)
+{
+	s_running_enable = enable;
+}
 
 bool still_running(void)
 {
     return s_running_enable;
 }
 
-inline Space *get_space(void)
+Space *get_space(void)
 {
     return &s_space;
 }
@@ -48,14 +54,17 @@ void rand_black_hole(void)
     local_t local;
 
     srand(++r);
-    local.m_x = rand()%(SPACE_MAP_X-1);
+    local.m_x = rand()%(SPACE_MAP_X);
+    local.m_x = (local.m_x > 0) ? (local.m_x - 1) : local.m_x;
     srand(++r);
-    local.m_y = rand()%(SPACE_MAP_Y-1);
+    local.m_y = rand()%(SPACE_MAP_Y);
+    local.m_y = (local.m_y > 0) ? (local.m_y - 1) : local.m_y;
 
     Object &obj = *space->m_space[local.m_y][local.m_x];
 
     if (obj.m_type == OBJECT_DEFAULT) {
-        space->set_object(new BlackHole(space, local));
+		BlackHole *bh = new BlackHole(space, local);
+        space->set_object(bh);
     }
 
 }
@@ -71,24 +80,24 @@ int sandbox_init(void)
     Space *space = get_space();
     dmsg("space:%p", space);
     assert(space != NULL);
-    space->set_object(new BlackHole(space, local_t(1, 3)));
-    space->set_object(new BlackHole(space, local_t(1, 2)));
-    space->set_object(new BlackHole(space, local_t(2, 2)));
-    space->set_object(new BlackHole(space, local_t(2, 3)));
-    space->set_object(new BlackHole(space, local_t(5, 5)));
-    space->set_object(new BlackHole(space, local_t(5, 15)));
-    space->set_object(new BlackHole(space, local_t(10, 25)));
-    space->set_object(new BlackHole(space, local_t(15, 35)));
-    space->set_object(new BlackHole(space, local_t(20, 30)));
-    space->set_object(new BlackHole(space, local_t(25, 15)));
-    space->set_object(new BlackHole(space, local_t(30, 40)));
-    space->set_object(new BlackHole(space, local_t(10, 50)));
+	BlackHole *bh = NULL;
+	int ret = 0;
+	bh = new BlackHole(space, local_t(1, 3));
+    ret = space->set_object(bh);
+	if (ret)
+		delete bh;
+	bh = new BlackHole(space, local_t(25, 15));
+    ret = space->set_object(bh);
+	if (ret)
+		delete bh;
 
     timer_init();
+	
 
     pthread_create(&s_tid[PTHREAD_VIEW], NULL, view, &s_sandbox);
     add_unit_timer(s_space.fflash_fps);
-    for (size_t i = 0; i < 9; ++i) {
+
+	for (size_t i = 0; i < 100; ++i) {
         add_unit_timer(rand_black_hole);
     }
 
@@ -99,6 +108,11 @@ void sandbox_exit(void)
 {
     pthread_join(s_tid[PTHREAD_VIEW], NULL);
     timer_exit();
+	if (g_log_fp) {
+		fclose(g_log_fp);
+		g_log_fp = NULL;
+	}
+		
     return;
 }
 
@@ -133,46 +147,33 @@ time_st::time_st() : m_trick(), m_min(0), m_mid(0), m_max(0)
 
 time_st &time_st::operator++()
 {
-#if 1
     inc(m_trick, 0);
     return *this;
-#else
-    if (m_min == -1ULL) {
-        m_min = 0;
-        if (m_mid == -1ULL) {
-            m_mid = 0;
-            if (m_max == -1ULL) {
-                m_max = 0;
-            } else {
-                ++m_max;
-            }
-        } else {
-            ++m_mid;
-        } 
-    } else {
-        ++m_min;
-    } 
-
-    return *this;
-#endif
 }
 
 int sandbox_exec(void)
 {
-    while (still_running()) {
+    while (still_running()) {		
         for (auto iter = s_space.begin(); iter != s_space.end(); ++iter) {
+
+			timer_runing();
+
             Object &obj = *iter;
             if (!obj.m_quality)
+                continue;
+            if (obj.m_type == OBJECT_DEFAULT)
                 continue;
 
             for (auto other = s_space.begin(); other != s_space.end(); ++other) {
                 Object &other_obj = *other;
 
+				if (!obj.m_quality)
+					break;
+				
+                if (other_obj.m_type == OBJECT_DEFAULT)
+                    continue;
+
                 if (!other_obj.m_quality) {
-                    if (other_obj.m_local == obj.m_local) {
-                        other_obj.m_type = obj.m_type;
-                        obj.action(other_obj);
-                    }
                     continue;
                 }
                 if (other_obj == obj) {
@@ -182,10 +183,9 @@ int sandbox_exec(void)
                 if (obj.interest(other_obj)) {
                     obj.action(other_obj);
                 }
-                usleep(1000);
             }
-        }
 
+        }
     }
 
     return 0;

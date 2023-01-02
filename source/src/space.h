@@ -11,7 +11,7 @@
 #define SPACE_VIEW_INFO (1)
 #define SPACE_VIEW_Y ((SPACE_MAP_Y)+2*(SPACE_VIEW_EDGE))
 #define SPACE_VIEW_X ((SPACE_MAP_X)+2*(SPACE_VIEW_EDGE))
-#define SPACE_VIEW_LOOP_TIME_MS 10
+#define SPACE_VIEW_LOOP_TIME_MS 100
 #define SPACE_VIEW(fmt, ...) do { \
     fprintf(stdout, fmt, ##__VA_ARGS__); \
     fflush(stdout); \
@@ -57,6 +57,7 @@ struct Space {
         int get_object(const local_t &local, Object **object);
         int del_object(const local_t &local);
         int mov_object(Object *object, const local_t &old_local);
+		int update_object(Object *object);
         void draw_view();
         iterator begin();
         iterator end();

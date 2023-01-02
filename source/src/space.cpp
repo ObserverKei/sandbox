@@ -91,15 +91,20 @@ Space::iterator Space::end()
             local_st(SPACE_MAP_X, SPACE_MAP_Y));
 }
 
-int Space::set_object(Object *object)
+int Space::set_object(Object *new_obj)
 {
-    if (!object || object->m_local.m_x >= SPACE_MAP_X || object->m_local.m_y >= SPACE_MAP_Y)
+    if (!new_obj || new_obj->m_local.m_x >= SPACE_MAP_X || new_obj->m_local.m_y >= SPACE_MAP_Y)
         return -1;
 
-    Object *old = m_space[object->m_local.m_y][object->m_local.m_x];
-    m_space[object->m_local.m_y][object->m_local.m_x] = object;
+	local_t new_local = new_obj->m_local;
+	Object *old = nullptr;
+	int ret = this->get_object(new_local, &old);
+	if (ret < 0)
+		return -1;
 
-    //delete old;
+	m_space[new_local.m_y][new_local.m_x] = new_obj;
+
+	delete old;
 
     return 0;
 }
@@ -108,12 +113,6 @@ int Space::del_object(const local_t &local)
 {
     if (local.m_x >= SPACE_MAP_X || local.m_y >= SPACE_MAP_Y)
         return -1;
-
-    Object *old = m_space[local.m_y][local.m_x];
-    m_space[local.m_y][local.m_x] = new Object(local);
-    //delete old;
-
-    dmsg("del old (%zu, %zu) done", local.m_x, local.m_y);
 
     return 0;
 }
@@ -130,27 +129,15 @@ int Space::get_object(const local_t &local, Object **object)
 
 int Space::mov_object(Object *obj, const local_t &old_local)
 {
-    if (!obj) {
-        dmsg("obj fail");
-        return -1;
-    }
-    Object *tmp = m_space[obj->m_local.m_y][obj->m_local.m_x]; 
-    if (tmp->m_type != OBJECT_DEFAULT) {
-        dmsg("mov fail");
-        return -1;
-    }
-#if 0
-    Object *old = m_space[old_local.m_y][old_local.m_x];
-    if (obj != old) {
-        dmsg(!"obj == old");
-        return -1;
-    }
-#endif
-
-    m_space[obj->m_local.m_y][obj->m_local.m_x] = obj;
-    m_space[old_local.m_y][old_local.m_x] = tmp;
-
     return 0;
+}
+
+int Space::update_object(Object *obj)
+{
+	if (!obj->m_quality)
+		return 0;
+	
+	return 0;
 }
 
 static std::string add_view_line(const char *name, size_t val)
@@ -167,12 +154,6 @@ static std::string add_view_line(const char *name, size_t val)
 
 void Space::draw_view(void)
 {
-#if 0
-    for (auto iter = snake->rbegin(); iter != snake->rend(); ++iter) {
-        (*(map_t *)map)[iter->second][iter->first] = 
-            (*iter == snake->front()) ? VIEW_SPACE_HEAD : VIEW_SPACE_BODY;
-    }
-#endif
     //backgroud
     for (size_t y = 0; y < SPACE_VIEW_Y; ++y) {
         for (size_t x = 0; x < SPACE_VIEW_X; ++x)  {
@@ -196,23 +177,12 @@ void Space::draw_view(void)
         if (obj.m_show != VIEW_EMPTY)
             m_view[obj.m_local.m_y + SPACE_VIEW_EDGE]
                 [obj.m_local.m_x + SPACE_VIEW_EDGE] = obj.m_show;
-        if (obj.m_show != VIEW_EMPTY) {
-
-#if 0
-            dmsg("view(%zu, %zu) %c obj(%zu, %zu) %c %zu",
-                    obj.m_local.m_y + SPACE_VIEW_EDGE, obj.m_local.m_x + SPACE_VIEW_EDGE,
-                    (m_view[obj.m_local.m_y + SPACE_VIEW_EDGE][obj.m_local.m_x + SPACE_VIEW_EDGE]), 
-                    obj.m_local.m_x, obj.m_local.m_y, obj.m_show, obj.m_quality);
-#endif
-        }
     }
 
     std::string score_view = add_view_line("score", m_score);
     std::string fps_view = add_view_line("fps", m_fps);
 
     std::string view_info = score_view + fps_view;
-
-    //dmsg("1 view:%c ", m_view[5][5]);
 
     size_t endl_cnt = 0;
     const char *ch = view_info.c_str();
@@ -223,14 +193,10 @@ void Space::draw_view(void)
 
     std::string view_format = std::string("%s") + view_info + 
         std::string("\033[") + std::to_string(SPACE_MAP_Y + endl_cnt + 2) + "A";
-  //  dmsg("2 view:%c ", m_view[5][5]);
 
     std::string view_str((const char *)m_view, sizeof(m_view));
 
     const char *std_p = view_str.c_str();
-
-//    dmsg("3 view:%c string:%c", m_view[5][5], (*((view_t *)std_p))[5][5]);
-
 
     SPACE_VIEW(view_format.c_str(), view_str.c_str());
     usleep(SPACE_VIEW_LOOP_TIME_MS * 1000);

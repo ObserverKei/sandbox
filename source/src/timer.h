@@ -8,8 +8,13 @@ extern "C" {
 #include "stddef.h"
 
 typedef void (*timer_hook_t)(void);
+typedef struct timer_info_st {
+	int timeout;
+	timer_hook_t hook;
+} timer_info_t;
 
 int timer_init(void);
+int timer_runing(void);
 int add_unit_timer(timer_hook_t hook);
 void timer_exit(void);
 

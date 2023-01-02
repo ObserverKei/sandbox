@@ -5,7 +5,19 @@
 
 #define TIMER_HOOK_MAX (10)
 
-static timer_hook_t timer_hook_list[TIMER_HOOK_MAX] = {0};
+static timer_info_t timer_hook_list[TIMER_HOOK_MAX] = {0};
+
+int timer_runing(void)
+{
+	 for (size_t i = 0; i < sizeof(timer_hook_list) / sizeof(timer_hook_list[0]); ++i) {
+        if (timer_hook_list[i].timeout && timer_hook_list[i].hook) {
+            timer_hook_list[i].hook();
+			timer_hook_list[i].timeout = 0;
+       	}
+    }
+	return 0;
+}
+
 
 void timer_signal_hook(int signo)
 {
@@ -13,8 +25,8 @@ void timer_signal_hook(int signo)
         return;
     
     for (size_t i = 0; i < sizeof(timer_hook_list) / sizeof(timer_hook_list[0]); ++i) {
-        if (timer_hook_list[i])
-            timer_hook_list[i]();
+		if (timer_hook_list[i].hook)
+        	timer_hook_list[i].timeout = 1;
     }
 }
 
@@ -33,8 +45,8 @@ int timer_init(void)
 int add_unit_timer(timer_hook_t hook)
 {
     for (size_t i = 0; i < sizeof(timer_hook_list) / sizeof(timer_hook_list[0]); ++i) {
-        if (!timer_hook_list[i]) {
-            timer_hook_list[i] = hook;
+        if (!timer_hook_list[i].hook) {
+            timer_hook_list[i].hook = hook;
             return 0;
         }
     }

@@ -2,7 +2,6 @@
 #include "space.h"
 #include <assert.h>
 
-
 local_st::local_st() : m_x(0), m_y(0)
 {
 }
@@ -50,7 +49,7 @@ local_st::local_st(const size_t x, const size_t y)
     m_y = y;
 }
 
-Physics::Physics() : m_quality(0), m_type(OBJECT_DEFAULT), m_show(VIEW_EMPTY), m_local(0, 0) 
+Physics::Physics() : m_quality(0), m_type(OBJECT_DEFAULT), m_show(VIEW_EMPTY), m_local(0, 0)
 {
 
 }
@@ -66,12 +65,13 @@ Physics::Physics(local_t local) : m_local(local), m_quality(0), m_type(OBJECT_DE
     m_magic = ++rand;
 }
 
-#include <iostream>
+bool Physics::operator!=(const Physics &where) const 
+{
+	return !Physics::operator==(where);
+}
 
 bool Physics::operator==(const Physics &where) const 
 {
-
-    //assert(m_quality < 1000);
     if (m_type != where.m_type)
         return false;
     if (m_quality != where.m_quality)
